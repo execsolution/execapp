@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Test APP</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+        body { background: #0b0b13; color: #fff; padding: 20px; overflow-x: hidden; }
+        
+        .header-title { text-align: center; font-size: 20px; font-weight: 800; letter-spacing: 2px; margin-bottom: 30px; text-transform: uppercase; color: #e0e0e0; }
+        
+        .card { background: #151522; border-radius: 16px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.05); }
+        .label { font-size: 12px; font-weight: 600; color: #888; margin-bottom: 10px; display: block; text-transform: uppercase; }
+        
+        .btn-group { display: flex; gap: 10px; margin-bottom: 20px; }
+        .btn-toggle { flex: 1; padding: 12px; border-radius: 10px; border: none; font-size: 14px; font-weight: 600; cursor: pointer; transition: 0.3s; }
+        .btn-toggle.active { background: linear-gradient(135deg, #6e8efb, #a777e3); color: white; box-shadow: 0 0 15px rgba(110, 142, 251, 0.4); }
+        .btn-toggle.inactive { background: #1a1a2e; color: #555; }
+        
+        .select-box { width: 100%; background: #1a1a2e; color: #fff; padding: 15px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1); font-size: 16px; font-weight: 600; margin-bottom: 20px; appearance: none; outline: none; }
+        
+        .timeframes { display: flex; justify-content: space-between; gap: 8px; margin-bottom: 30px; }
+        .tf-btn { flex: 1; background: #1a1a2e; border: 1px solid rgba(255,255,255,0.1); color: #888; padding: 10px 0; border-radius: 8px; font-weight: 600; cursor: pointer; transition: 0.3s; }
+        .tf-btn.active { background: linear-gradient(135deg, #6e8efb, #a777e3); color: white; border: none; }
+        
+        .main-btn { width: 100%; background: linear-gradient(135deg, #4776E6, #8E54E9); color: white; border: none; padding: 16px; border-radius: 12px; font-size: 16px; font-weight: 800; cursor: pointer; box-shadow: 0 0 20px rgba(71, 118, 230, 0.5); display: flex; justify-content: center; align-items: center; gap: 10px; text-transform: uppercase; }
+        
+        /* Страница 2: Результат */
+        #page2 { display: none; }
+        .result-box { text-align: center; margin-bottom: 20px; }
+        .result-pair { font-size: 24px; font-weight: 800; margin-bottom: 15px; }
+        .result-direction { font-size: 32px; font-weight: 800; margin-bottom: 15px; padding: 10px; border-radius: 10px; }
+        .dir-up { color: #00e676; background: rgba(0, 230, 118, 0.1); }
+        .dir-down { color: #ff1744; background: rgba(255, 23, 68, 0.1); }
+        .result-info { font-size: 16px; color: #ccc; margin-bottom: 20px; line-height: 1.6; }
+        
+        .ai-analysis { background: #1a1a2e; border-left: 4px solid #8E54E9; padding: 15px; border-radius: 8px; font-size: 13px; color: #aaa; text-align: left; margin-bottom: 30px; }
+        .ai-title { color: #8E54E9; font-weight: 800; margin-bottom: 8px; font-size: 14px; display: flex; align-items: center; gap: 5px; }
+        
+        .back-btn { background: #2a2a3c; }
+    </style>
+</head>
+<body>
+
+    <div class="header-title">Test APP</div>
+
+    <!-- Страница 1: Настройки -->
+    <div id="page1" class="card">
+        <span class="label">Тип сигнала</span>
+        <div class="btn-group">
+            <button class="btn-toggle active">OTC</button>
+            <button class="btn-toggle inactive" disabled>Forex</button>
+        </div>
+
+        <span class="label">Валютная пара</span>
+        <select id="pair-select" class="select-box">
+            <option value="EUR/USD OTC">🇺🇸 EUR/USD OTC</option>
+            <option value="GBP/USD OTC">🇬🇧 GBP/USD OTC</option>
+            <option value="USD/JPY OTC">🇯🇵 USD/JPY OTC</option>
+            <option value="AUD/CAD OTC">🇦🇺 AUD/CAD OTC</option>
+            <option value="NZD/USD OTC">🇳🇿 NZD/USD OTC</option>
+            <option value="EUR/GBP OTC">🇪🇺 EUR/GBP OTC</option>
+            <option value="USD/CHF OTC">🇨🇭 USD/CHF OTC</option>
+            <option value="CAD/CHF OTC">🇨🇦 CAD/CHF OTC</option>
+            <option value="AUD/CHF OTC">🇦🇺 AUD/CHF OTC</option>
+            <option value="GBP/JPY OTC">🇬🇧 GBP/JPY OTC</option>
+            <option value="EUR/JPY OTC">🇪🇺 EUR/JPY OTC</option>
+            <option value="AUD/USD OTC">🇦🇺 AUD/USD OTC</option>
+        </select>
+
+        <span class="label">Таймфрейм</span>
+        <div class="timeframes" id="tf-container">
+            <button class="tf-btn" data-tf="1M">1 M</button>
+            <button class="tf-btn active" data-tf="3M">3 M</button>
+            <button class="tf-btn" data-tf="5M">5 M</button>
+            <button class="tf-btn" data-tf="15M">15 M</button>
+        </div>
+
+        <button class="main-btn" onclick="getSignal()">⚡ Получить сигнал</button>
+    </div>
+
+    <!-- Страница 2: Результат -->
+    <div id="page2" class="card">
+        <div class="result-box">
+            <div class="result-pair" id="res-pair">EUR/USD OTC</div>
+            <div class="result-direction" id="res-dir">ВВЕРХ 🔼</div>
+            <div class="result-info">
+                Время входа: <strong id="res-time" style="color:#fff;">12:45</strong><br>
+                Таймфрейм: <strong id="res-tf" style="color:#fff;">3 M</strong>
+            </div>
+        </div>
+
+        <div class="ai-analysis">
+            <div class="ai-title">🤖 ИИ АНАЛИЗ</div>
+            <div id="ai-text">Текст анализа...</div>
+        </div>
+
+        <button class="main-btn back-btn" onclick="goBack()">🔙 Назад</button>
+    </div>
+
+    <script>
+        // Инициализация Telegram Web App
+        let tg = window.Telegram.WebApp;
+        tg.expand(); // Открываем на весь экран
+
+        // Выбор таймфрейма (визуально)
+        let selectedTf = "3M";
+        document.querySelectorAll('.tf-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.tf-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                selectedTf = this.getAttribute('data-tf');
+            });
+        });
+
+        // База фиксированных ИИ анализов для пар
+        const aiAnalysisTexts = {
+            "EUR/USD OTC": "Алгоритм фиксирует микро-импульсы в Еврозоне. Нейросеть выявила скрытое накопление объемов крупными игроками, что приведет к пробитию локального уровня.",
+            "GBP/USD OTC": "Британский фунт испытывает давление из-за макроэкономической неопределенности. ИИ прогнозирует отскок от зоны ликвидности с вероятностью 87%.",
+            "USD/JPY OTC": "Банк Японии удерживает политику, однако алгоритмы фиксируют перекупленность актива по RSI и MACD на старших таймфреймах. Ожидается локальная коррекция.",
+            "AUD/CAD OTC": "Сырьевые рынки вносят дисбаланс. Анализ стакана ордеров показывает отсутствие сильного сопротивления, паттерн указывает на продолжение тренда.",
+            "NZD/USD OTC": "Корреляция с австралийским долларом разорвана. ИИ замечает дивергенцию на осцилляторах, ожидается резкая смена направления свечи.",
+            "EUR/GBP OTC": "Кросс-курс находится в зоне консолидации. Нейросеть анализирует сужение лент Боллинджера, что сигнализирует о скором выстреле цены.",
+            "USD/CHF OTC": "Швейцарский франк выступает защитным активом. Модель машинного обучения распознала паттерн «Двойное дно/вершина» на тиковом графике.",
+            "CAD/CHF OTC": "Влияние цен на нефть на канадский доллар учтено ИИ. Зафиксирован ложный пробой уровня, алгоритм прогнозирует возврат цены в канал.",
+            "AUD/CHF OTC": "Наблюдается аномальная волатильность в азиатскую сессию. ИИ оценивает текущую плотность лимитных заявок как недостаточную для удержания уровня.",
+            "GBP/JPY OTC": "Синтетический анализ кросс-пары указывает на перепроданность. Алгоритм выстроил фрактальную модель, ожидающую импульс.",
+            "EUR/JPY OTC": "Европейская сессия оставила за собой пул ликвидности. ИИ прогнозирует сбор стопов мелких трейдеров перед основным движением.",
+            "AUD/USD OTC": "Данные по безработице заложены в OTC алгоритм. Система выявила паттерн истощения тренда и слабость маркетмейкера в моменте."
+        };
+
+        function getSignal() {
+            // Получаем данные
+            const pair = document.getElementById('pair-select').value;
+            
+            // Генерация случайного направления
+            const isUp = Math.random() > 0.5;
+            const dirElement = document.getElementById('res-dir');
+            
+            if (isUp) {
+                dirElement.innerHTML = 'ВВЕРХ 🔼';
+                dirElement.className = 'result-direction dir-up';
+            } else {
+                dirElement.innerHTML = 'ВНИЗ 🔽';
+                dirElement.className = 'result-direction dir-down';
+            }
+
+            // Время входа (текущее время пользователя + 1 минута на подготовку)
+            const now = new Date();
+            now.setMinutes(now.getMinutes() + 1);
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            
+            // Заполнение данных на странице 2
+            document.getElementById('res-pair').innerText = pair;
+            document.getElementById('res-time').innerText = `${hours}:${minutes}`;
+            document.getElementById('res-tf').innerText = selectedTf.replace('M', ' Минут(ы)');
+            
+            // Установка фиксированного текста ИИ
+            document.getElementById('ai-text').innerText = aiAnalysisTexts[pair] || "Алгоритм анализирует график. Ожидается импульсное движение.";
+
+            // Переключение страниц
+            document.getElementById('page1').style.display = 'none';
+            document.getElementById('page2').style.display = 'block';
+        }
+
+        function goBack() {
+            document.getElementById('page2').style.display = 'none';
+            document.getElementById('page1').style.display = 'block';
+        }
+    </script>
+</body>
+</html>
