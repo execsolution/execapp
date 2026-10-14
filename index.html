@@ -17,22 +17,43 @@
         .label { font-size: 12px; font-weight: 600; color: #888; margin-bottom: 10px; display: block; text-transform: uppercase; }
         
         .btn-group { display: flex; gap: 10px; margin-bottom: 20px; }
-        .btn-toggle { flex: 1; padding: 12px; border-radius: 10px; border: none; font-size: 14px; font-weight: 600; cursor: pointer; transition: 0.3s; }
+        .btn-toggle { flex: 1; padding: 12px; border-radius: 10px; border: none; font-size: 14px; font-weight: 600; cursor: default; }
         .btn-toggle.active { background: linear-gradient(135deg, #6e8efb, #a777e3); color: white; box-shadow: 0 0 15px rgba(110, 142, 251, 0.4); }
-        .btn-toggle.inactive { background: #1a1a2e; color: #555; }
         
-        .select-box { width: 100%; background: #1a1a2e; color: #fff; padding: 15px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1); font-size: 16px; font-weight: 600; margin-bottom: 20px; appearance: none; outline: none; }
+        /* Кастомный выпадающий список с картинками */
+        .custom-dropdown { position: relative; width: 100%; margin-bottom: 20px; }
+        .dropdown-header { background: #1a1a2e; color: #fff; padding: 15px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1); font-size: 16px; font-weight: 600; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
+        .dropdown-header-content { display: flex; align-items: center; gap: 10px; }
+        .dropdown-list { display: none; position: absolute; top: 100%; left: 0; right: 0; background: #1a1a2e; border: 1px solid rgba(255,255,255,0.2); border-radius: 10px; margin-top: 5px; z-index: 100; max-height: 250px; overflow-y: auto; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
+        .dropdown-list::-webkit-scrollbar { width: 6px; }
+        .dropdown-list::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+        .dropdown-item { padding: 12px 15px; display: flex; align-items: center; gap: 10px; cursor: pointer; font-weight: 600; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .dropdown-item:hover { background: #2a2a3c; }
+        .dropdown-list.show { display: block; }
         
+        /* Стили для круглых флагов */
+        .flag-group { display: flex; align-items: center; }
+        .flag { width: 24px; height: 24px; border-radius: 50%; object-fit: cover; border: 2px solid #1a1a2e; }
+        .flag:nth-child(2) { margin-left: -10px; }
+
         .timeframes { display: flex; justify-content: space-between; gap: 8px; margin-bottom: 30px; }
         .tf-btn { flex: 1; background: #1a1a2e; border: 1px solid rgba(255,255,255,0.1); color: #888; padding: 10px 0; border-radius: 8px; font-weight: 600; cursor: pointer; transition: 0.3s; }
         .tf-btn.active { background: linear-gradient(135deg, #6e8efb, #a777e3); color: white; border: none; }
         
         .main-btn { width: 100%; background: linear-gradient(135deg, #4776E6, #8E54E9); color: white; border: none; padding: 16px; border-radius: 12px; font-size: 16px; font-weight: 800; cursor: pointer; box-shadow: 0 0 20px rgba(71, 118, 230, 0.5); display: flex; justify-content: center; align-items: center; gap: 10px; text-transform: uppercase; }
         
+        /* Анимация загрузки */
+        #loading-page { display: none; text-align: center; padding: 40px 20px; }
+        .loader { width: 50px; height: 50px; border: 4px solid rgba(255, 255, 255, 0.1); border-top: 4px solid #8E54E9; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 20px auto; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .loading-text { font-size: 16px; font-weight: 600; color: #ccc; animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+
         /* Страница 2: Результат */
         #page2 { display: none; }
         .result-box { text-align: center; margin-bottom: 20px; }
-        .result-pair { font-size: 24px; font-weight: 800; margin-bottom: 15px; }
+        .result-pair { font-size: 24px; font-weight: 800; margin-bottom: 15px; display: flex; justify-content: center; align-items: center; gap: 10px; }
+        .result-pair .flag { width: 30px; height: 30px; } /* Флаги чуть больше в результате */
         .result-direction { font-size: 32px; font-weight: 800; margin-bottom: 15px; padding: 10px; border-radius: 10px; }
         .dir-up { color: #00e676; background: rgba(0, 230, 118, 0.1); }
         .dir-down { color: #ff1744; background: rgba(255, 23, 68, 0.1); }
@@ -41,7 +62,7 @@
         .ai-analysis { background: #1a1a2e; border-left: 4px solid #8E54E9; padding: 15px; border-radius: 8px; font-size: 13px; color: #aaa; text-align: left; margin-bottom: 30px; }
         .ai-title { color: #8E54E9; font-weight: 800; margin-bottom: 8px; font-size: 14px; display: flex; align-items: center; gap: 5px; }
         
-        .back-btn { background: #2a2a3c; }
+        .back-btn { background: #2a2a3c; box-shadow: none; }
     </style>
 </head>
 <body>
@@ -53,24 +74,20 @@
         <span class="label">Тип сигнала</span>
         <div class="btn-group">
             <button class="btn-toggle active">OTC</button>
-            <button class="btn-toggle inactive" disabled>Forex</button>
         </div>
 
         <span class="label">Валютная пара</span>
-        <select id="pair-select" class="select-box">
-            <option value="EUR/USD OTC">🇺🇸 EUR/USD OTC</option>
-            <option value="GBP/USD OTC">🇬🇧 GBP/USD OTC</option>
-            <option value="USD/JPY OTC">🇯🇵 USD/JPY OTC</option>
-            <option value="AUD/CAD OTC">🇦🇺 AUD/CAD OTC</option>
-            <option value="NZD/USD OTC">🇳🇿 NZD/USD OTC</option>
-            <option value="EUR/GBP OTC">🇪🇺 EUR/GBP OTC</option>
-            <option value="USD/CHF OTC">🇨🇭 USD/CHF OTC</option>
-            <option value="CAD/CHF OTC">🇨🇦 CAD/CHF OTC</option>
-            <option value="AUD/CHF OTC">🇦🇺 AUD/CHF OTC</option>
-            <option value="GBP/JPY OTC">🇬🇧 GBP/JPY OTC</option>
-            <option value="EUR/JPY OTC">🇪🇺 EUR/JPY OTC</option>
-            <option value="AUD/USD OTC">🇦🇺 AUD/USD OTC</option>
-        </select>
+        <div class="custom-dropdown" id="custom-pair-dropdown">
+            <div class="dropdown-header" onclick="toggleDropdown()">
+                <div class="dropdown-header-content" id="selected-pair-content">
+                    <!-- Заполняется через JS -->
+                </div>
+                <span class="arrow">▼</span>
+            </div>
+            <div class="dropdown-list" id="dropdown-list">
+                <!-- Опции заполняются через JS -->
+            </div>
+        </div>
 
         <span class="label">Таймфрейм</span>
         <div class="timeframes" id="tf-container">
@@ -83,10 +100,18 @@
         <button class="main-btn" onclick="getSignal()">⚡ Получить сигнал</button>
     </div>
 
+    <!-- Страница Ожидания (Загрузка) -->
+    <div id="loading-page" class="card">
+        <div class="loader"></div>
+        <div class="loading-text">ИИ анализирует рынок...</div>
+    </div>
+
     <!-- Страница 2: Результат -->
     <div id="page2" class="card">
         <div class="result-box">
-            <div class="result-pair" id="res-pair">EUR/USD OTC</div>
+            <div class="result-pair" id="res-pair">
+                <!-- Заполняется через JS -->
+            </div>
             <div class="result-direction" id="res-dir">ВВЕРХ 🔼</div>
             <div class="result-info">
                 Время входа: <strong id="res-time" style="color:#fff;">12:45</strong><br>
@@ -103,11 +128,9 @@
     </div>
 
     <script>
-        // Инициализация Telegram Web App
         let tg = window.Telegram.WebApp;
-        tg.expand(); // Открываем на весь экран
+        tg.expand(); 
 
-        // Выбор таймфрейма (визуально)
         let selectedTf = "3M";
         document.querySelectorAll('.tf-btn').forEach(btn => {
             btn.addEventListener('click', function() {
@@ -117,7 +140,24 @@
             });
         });
 
-        // База фиксированных ИИ анализов для пар
+        // База данных пар с кодами стран для подгрузки картинок флагов
+        const pairsData = [
+            { id: "EUR/USD OTC", f1: "eu", f2: "us" },
+            { id: "GBP/USD OTC", f1: "gb", f2: "us" },
+            { id: "USD/JPY OTC", f1: "us", f2: "jp" },
+            { id: "AUD/CAD OTC", f1: "au", f2: "ca" },
+            { id: "NZD/USD OTC", f1: "nz", f2: "us" },
+            { id: "EUR/GBP OTC", f1: "eu", f2: "gb" },
+            { id: "USD/CHF OTC", f1: "us", f2: "ch" },
+            { id: "CAD/CHF OTC", f1: "ca", f2: "ch" },
+            { id: "AUD/CHF OTC", f1: "au", f2: "ch" },
+            { id: "GBP/JPY OTC", f1: "gb", f2: "jp" },
+            { id: "EUR/JPY OTC", f1: "eu", f2: "jp" },
+            { id: "AUD/USD OTC", f1: "au", f2: "us" }
+        ];
+
+        let selectedPair = pairsData[0].id;
+
         const aiAnalysisTexts = {
             "EUR/USD OTC": "Алгоритм фиксирует микро-импульсы в Еврозоне. Нейросеть выявила скрытое накопление объемов крупными игроками, что приведет к пробитию локального уровня.",
             "GBP/USD OTC": "Британский фунт испытывает давление из-за макроэкономической неопределенности. ИИ прогнозирует отскок от зоны ликвидности с вероятностью 87%.",
@@ -133,39 +173,83 @@
             "AUD/USD OTC": "Данные по безработице заложены в OTC алгоритм. Система выявила паттерн истощения тренда и слабость маркетмейкера в моменте."
         };
 
-        function getSignal() {
-            // Получаем данные
-            const pair = document.getElementById('pair-select').value;
-            
-            // Генерация случайного направления
-            const isUp = Math.random() > 0.5;
-            const dirElement = document.getElementById('res-dir');
-            
-            if (isUp) {
-                dirElement.innerHTML = 'ВВЕРХ 🔼';
-                dirElement.className = 'result-direction dir-up';
-            } else {
-                dirElement.innerHTML = 'ВНИЗ 🔽';
-                dirElement.className = 'result-direction dir-down';
+        // Генерация HTML для флагов (используем бесплатный CDN для флагов)
+        function renderFlags(f1, f2) {
+            return `<div class="flag-group">
+                        <img class="flag" src="https://flagcdn.com/w40/${f1}.png" alt="${f1}">
+                        <img class="flag" src="https://flagcdn.com/w40/${f2}.png" alt="${f2}">
+                    </div>`;
+        }
+
+        const dropdownList = document.getElementById('dropdown-list');
+        const selectedPairContent = document.getElementById('selected-pair-content');
+
+        // Обновление выбранной пары
+        function updateSelected(pairId) {
+            selectedPair = pairId;
+            const pair = pairsData.find(p => p.id === pairId);
+            selectedPairContent.innerHTML = `${renderFlags(pair.f1, pair.f2)}<span>${pair.id}</span>`;
+        }
+
+        // Заполнение списка валют
+        pairsData.forEach(pair => {
+            const item = document.createElement('div');
+            item.className = 'dropdown-item';
+            item.innerHTML = `${renderFlags(pair.f1, pair.f2)}<span>${pair.id}</span>`;
+            item.onclick = (e) => {
+                e.stopPropagation();
+                updateSelected(pair.id);
+                dropdownList.classList.remove('show');
+            };
+            dropdownList.appendChild(item);
+        });
+
+        function toggleDropdown() { dropdownList.classList.toggle('show'); }
+
+        // Закрытие списка при клике вне его
+        document.addEventListener('click', function(e) {
+            if (!document.getElementById('custom-pair-dropdown').contains(e.target)) {
+                dropdownList.classList.remove('show');
             }
+        });
 
-            // Время входа (текущее время пользователя + 1 минута на подготовку)
-            const now = new Date();
-            now.setMinutes(now.getMinutes() + 1);
-            const hours = String(now.getHours()).padStart(2, '0');
-            const minutes = String(now.getMinutes()).padStart(2, '0');
-            
-            // Заполнение данных на странице 2
-            document.getElementById('res-pair').innerText = pair;
-            document.getElementById('res-time').innerText = `${hours}:${minutes}`;
-            document.getElementById('res-tf').innerText = selectedTf.replace('M', ' Минут(ы)');
-            
-            // Установка фиксированного текста ИИ
-            document.getElementById('ai-text').innerText = aiAnalysisTexts[pair] || "Алгоритм анализирует график. Ожидается импульсное движение.";
+        updateSelected(pairsData[0].id); // Устанавливаем пару по умолчанию
 
-            // Переключение страниц
+        function getSignal() {
+            // Включаем экран загрузки
             document.getElementById('page1').style.display = 'none';
-            document.getElementById('page2').style.display = 'block';
+            document.getElementById('loading-page').style.display = 'block';
+
+            // Имитация работы ИИ (задержка 2.5 секунды)
+            setTimeout(() => {
+                const isUp = Math.random() > 0.5;
+                const dirElement = document.getElementById('res-dir');
+                
+                if (isUp) {
+                    dirElement.innerHTML = 'ВВЕРХ 🔼';
+                    dirElement.className = 'result-direction dir-up';
+                } else {
+                    dirElement.innerHTML = 'ВНИЗ 🔽';
+                    dirElement.className = 'result-direction dir-down';
+                }
+
+                const now = new Date();
+                now.setMinutes(now.getMinutes() + 1);
+                const hours = String(now.getHours()).padStart(2, '0');
+                const minutes = String(now.getMinutes()).padStart(2, '0');
+                
+                // Подготавливаем красивые флаги для экрана результата
+                const pairObj = pairsData.find(p => p.id === selectedPair);
+                document.getElementById('res-pair').innerHTML = `${renderFlags(pairObj.f1, pairObj.f2)} <span>${selectedPair}</span>`;
+                
+                document.getElementById('res-time').innerText = `${hours}:${minutes}`;
+                document.getElementById('res-tf').innerText = selectedTf.replace('M', ' Минут(ы)');
+                document.getElementById('ai-text').innerText = aiAnalysisTexts[selectedPair];
+
+                // Выключаем загрузку, показываем результат
+                document.getElementById('loading-page').style.display = 'none';
+                document.getElementById('page2').style.display = 'block';
+            }, 2500); // 2500 миллисекунд = 2.5 секунды
         }
 
         function goBack() {
