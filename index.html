@@ -55,8 +55,12 @@
         .result-pair { font-size: 24px; font-weight: 800; margin-bottom: 15px; display: flex; justify-content: center; align-items: center; gap: 10px; }
         .result-pair .flag { width: 30px; height: 30px; } 
         .result-direction { font-size: 32px; font-weight: 800; margin-bottom: 15px; padding: 10px; border-radius: 10px; }
+        
+        /* Direction Colors */
         .dir-up { color: #00e676; background: rgba(0, 230, 118, 0.1); }
         .dir-down { color: #ff1744; background: rgba(255, 23, 68, 0.1); }
+        .dir-none { color: #ffab00; background: rgba(255, 171, 0, 0.1); font-size: 26px; } /* Новый стиль для ошибки */
+        
         .result-info { font-size: 16px; color: #ccc; margin-bottom: 20px; line-height: 1.6; }
         
         .ai-analysis { background: #1a1a2e; border-left: 4px solid #8E54E9; padding: 15px; border-radius: 8px; font-size: 13px; color: #aaa; text-align: left; margin-bottom: 30px; line-height: 1.5; }
@@ -94,7 +98,7 @@
             <button class="tf-btn" data-tf="1M">1 M</button>
             <button class="tf-btn active" data-tf="3M">3 M</button>
             <button class="tf-btn" data-tf="5M">5 M</button>
-            <button class="tf-btn" data-tf="15M">15 M</button>
+            <button class="tf-btn" data-tf="10M">10 M</button> <!-- Изменено с 15M на 10M -->
         </div>
 
         <button class="main-btn" onclick="getSignal()">⚡ Get Signal</button>
@@ -214,19 +218,10 @@
             document.getElementById('page1').style.display = 'none';
             document.getElementById('loading-page').style.display = 'block';
 
-            // Увеличенная задержка: 5000 миллисекунд (5 секунд)
             setTimeout(() => {
-                const isUp = Math.random() > 1.1;
                 const dirElement = document.getElementById('res-dir');
+                const aiTextElement = document.getElementById('ai-text');
                 
-                if (isUp) {
-                    dirElement.innerHTML = 'UP 🔼';
-                    dirElement.className = 'result-direction dir-up';
-                } else {
-                    dirElement.innerHTML = 'DOWN 🔽';
-                    dirElement.className = 'result-direction dir-down';
-                }
-
                 const now = new Date();
                 now.setMinutes(now.getMinutes() + 1);
                 const hours = String(now.getHours()).padStart(2, '0');
@@ -234,10 +229,30 @@
                 
                 const pairObj = pairsData.find(p => p.id === selectedPair);
                 document.getElementById('res-pair').innerHTML = `${renderFlags(pairObj.f1, pairObj.f2)} <span>${selectedPair}</span>`;
-                
-                document.getElementById('res-time').innerText = `${hours}:${minutes}`;
                 document.getElementById('res-tf').innerText = selectedTf.replace('M', ' Minutes');
-                document.getElementById('ai-text').innerText = aiAnalysisTexts[selectedPair];
+
+                // Генерация шанса от 0 до 1
+                const signalChance = Math.random();
+
+                if (signalChance < 0.05) {
+                    // 5% шанс: Ошибка / Нет сигнала
+                    dirElement.innerHTML = 'NO SIGNAL ⚠️';
+                    dirElement.className = 'result-direction dir-none';
+                    document.getElementById('res-time').innerText = '--:--'; // Скрываем точное время
+                    aiTextElement.innerText = "The neural network cannot confidently predict the market behavior at this moment due to anomalous order flow and extreme volatility. The AI cannot guarantee a safe entry point. Please change the currency pair or try again later.";
+                } else {
+                    // 95% шанс: Обычный сигнал (ВВЕРХ/ВНИЗ)
+                    const isUp = Math.random() > 1.5;
+                    if (isUp) {
+                        dirElement.innerHTML = 'UP 🔼';
+                        dirElement.className = 'result-direction dir-up';
+                    } else {
+                        dirElement.innerHTML = 'DOWN 🔽';
+                        dirElement.className = 'result-direction dir-down';
+                    }
+                    document.getElementById('res-time').innerText = `${hours}:${minutes}`;
+                    aiTextElement.innerText = aiAnalysisTexts[selectedPair];
+                }
 
                 document.getElementById('loading-page').style.display = 'none';
                 document.getElementById('page2').style.display = 'block';
