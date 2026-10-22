@@ -276,7 +276,7 @@
                     document.getElementById('res-time').innerText = '--:--'; 
                     aiTextElement.innerText = "The neural network cannot confidently predict the market behavior at this moment due to anomalous order flow and extreme volatility. The AI cannot guarantee a safe entry point. Please change the currency pair or try again later.";
                 } else {
-                    const isUp = Math.random() > 4;
+                    const isUp = Math.random() > 9;
                     if (isUp) {
                         dirElement.innerHTML = 'UP 🔼';
                         dirElement.className = 'result-direction dir-up';
