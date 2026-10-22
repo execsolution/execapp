@@ -40,8 +40,17 @@
         .tf-btn { flex: 1; background: #1a1a2e; border: 1px solid rgba(255,255,255,0.1); color: #888; padding: 10px 0; border-radius: 8px; font-weight: 600; cursor: pointer; transition: 0.3s; }
         .tf-btn.active { background: linear-gradient(135deg, #6e8efb, #a777e3); color: white; border: none; }
         
-        .main-btn { width: 100%; background: linear-gradient(135deg, #4776E6, #8E54E9); color: white; border: none; padding: 16px; border-radius: 12px; font-size: 16px; font-weight: 800; cursor: pointer; box-shadow: 0 0 20px rgba(71, 118, 230, 0.5); display: flex; justify-content: center; align-items: center; gap: 10px; text-transform: uppercase; }
+        .main-btn { width: 100%; background: linear-gradient(135deg, #4776E6, #8E54E9); color: white; border: none; padding: 16px; border-radius: 12px; font-size: 16px; font-weight: 800; cursor: pointer; box-shadow: 0 0 20px rgba(71, 118, 230, 0.5); display: flex; justify-content: center; align-items: center; gap: 10px; text-transform: uppercase; transition: 0.3s; }
         
+        /* Divider & Auto Signal */
+        .divider { display: flex; align-items: center; text-align: center; margin: 20px 0; color: #555; font-size: 12px; font-weight: 600; letter-spacing: 1px; }
+        .divider::before, .divider::after { content: ''; flex: 1; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .divider:not(:empty)::before { margin-right: 15px; }
+        .divider:not(:empty)::after { margin-left: 15px; }
+        
+        .auto-btn { background: #1a1a2e; border: 1px solid rgba(142, 84, 233, 0.4); color: #a777e3; box-shadow: none; }
+        .auto-btn:active { background: rgba(142, 84, 233, 0.2); }
+
         /* Loading Animation */
         #loading-page { display: none; text-align: center; padding: 40px 20px; }
         .loader { width: 50px; height: 50px; border: 4px solid rgba(255, 255, 255, 0.1); border-top: 4px solid #8E54E9; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 20px auto; }
@@ -59,7 +68,7 @@
         /* Direction Colors */
         .dir-up { color: #00e676; background: rgba(0, 230, 118, 0.1); }
         .dir-down { color: #ff1744; background: rgba(255, 23, 68, 0.1); }
-        .dir-none { color: #ffab00; background: rgba(255, 171, 0, 0.1); font-size: 26px; } /* Новый стиль для ошибки */
+        .dir-none { color: #ffab00; background: rgba(255, 171, 0, 0.1); font-size: 26px; } 
         
         .result-info { font-size: 16px; color: #ccc; margin-bottom: 20px; line-height: 1.6; }
         
@@ -98,10 +107,14 @@
             <button class="tf-btn" data-tf="1M">1 M</button>
             <button class="tf-btn active" data-tf="3M">3 M</button>
             <button class="tf-btn" data-tf="5M">5 M</button>
-            <button class="tf-btn" data-tf="10M">10 M</button> <!-- Изменено с 15M на 10M -->
+            <button class="tf-btn" data-tf="10M">10 M</button>
         </div>
 
         <button class="main-btn" onclick="getSignal()">⚡ Get Signal</button>
+        
+        <div class="divider">OR</div>
+        
+        <button class="main-btn auto-btn" onclick="getAutoSignal()">✨ AUTO SIGNAL</button>
     </div>
 
     <!-- Loading Page -->
@@ -136,6 +149,8 @@
         tg.expand(); 
 
         let selectedTf = "3M";
+        const tfList = ["1M", "3M", "5M", "10M"];
+
         document.querySelectorAll('.tf-btn').forEach(btn => {
             btn.addEventListener('click', function() {
                 document.querySelectorAll('.tf-btn').forEach(b => b.classList.remove('active'));
@@ -214,6 +229,28 @@
 
         updateSelected(pairsData[0].id); 
 
+        // Функция случайного выбора параметров (Автосигнал)
+        function getAutoSignal() {
+            // 1. Выбираем случайную пару
+            const randomPairIndex = Math.floor(Math.random() * pairsData.length);
+            updateSelected(pairsData[randomPairIndex].id);
+
+            // 2. Выбираем случайный таймфрейм
+            const randomTfIndex = Math.floor(Math.random() * tfList.length);
+            selectedTf = tfList[randomTfIndex];
+
+            // 3. Визуально переключаем кнопку таймфрейма
+            document.querySelectorAll('.tf-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.getAttribute('data-tf') === selectedTf) {
+                    btn.classList.add('active');
+                }
+            });
+
+            // 4. Запускаем стандартный генератор сигнала
+            getSignal();
+        }
+
         function getSignal() {
             document.getElementById('page1').style.display = 'none';
             document.getElementById('loading-page').style.display = 'block';
@@ -231,18 +268,15 @@
                 document.getElementById('res-pair').innerHTML = `${renderFlags(pairObj.f1, pairObj.f2)} <span>${selectedPair}</span>`;
                 document.getElementById('res-tf').innerText = selectedTf.replace('M', ' Minutes');
 
-                // Генерация шанса от 0 до 1
                 const signalChance = Math.random();
 
                 if (signalChance < 0.05) {
-                    // 5% шанс: Ошибка / Нет сигнала
                     dirElement.innerHTML = 'NO SIGNAL ⚠️';
                     dirElement.className = 'result-direction dir-none';
-                    document.getElementById('res-time').innerText = '--:--'; // Скрываем точное время
+                    document.getElementById('res-time').innerText = '--:--'; 
                     aiTextElement.innerText = "The neural network cannot confidently predict the market behavior at this moment due to anomalous order flow and extreme volatility. The AI cannot guarantee a safe entry point. Please change the currency pair or try again later.";
                 } else {
-                    // 95% шанс: Обычный сигнал (ВВЕРХ/ВНИЗ)
-                    const isUp = Math.random() > 1.5;
+                    const isUp = Math.random() > 4;
                     if (isUp) {
                         dirElement.innerHTML = 'UP 🔼';
                         dirElement.className = 'result-direction dir-up';
